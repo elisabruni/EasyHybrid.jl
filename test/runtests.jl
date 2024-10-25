@@ -1,3 +1,6 @@
+# load Project.toml and install packages
+#using Pkg; Pkg.activate("."); Pkg.instantiate()
+
 using EasyHybrid
 using Test
 using Chain: @chain
@@ -14,8 +17,10 @@ dk_twos = gen_dk_2outputs()
 #out_twos = lhm_twos(dk_twos, :infer)
 
 @testset "EasyHybrid.jl" begin
+    ##=
     # test model instantiation
-    lhm = LinearHybridModel([:x2, :x3], [:x1], 1, 5, DenseNN; b=[2.0f0])
+    #lhm = LinearHybridModel([:x2, :x3], [:x1], 1, 5, DenseNN; b=[2.0f0])
+    lhm = LinearHybridModel([:x2, :x3], [:x1], 1, 5; b=[2.0f0])
     @test lhm.forcing == [:x1]
     @test lhm.b == [2.0f0]
     @test lhm.predictors == [:x2, :x3]
@@ -25,7 +30,8 @@ dk_twos = gen_dk_2outputs()
     out_lhm = lhm(dk, :infer)
     @test size(out_lhm.a) == (1, 1000)
     @test size(out_lhm.pred) == (1000, 1000)
-
+    ##=#
+    
     # test two_outputs
     lhm_twos = LinearHybridModel_2outputs([:x2, :x3], [:x1, :x2], 1, 5, DenseNN; b=[4.0f0])
     @test lhm_twos.a == [1.0f0]
@@ -42,7 +48,27 @@ dk_twos = gen_dk_2outputs()
     @test Q10_m.Q10 == [2.0f0]
 
     # test model instantiation
+    Q10_m_test = FluxPartModel_Q10_test(
+        [:TA, :VPD],                # RUE_predictors
+        forcing=[:SW_IN, :TA],      # forcing variables
+        gamma0=[0.5f0],             # gamma0 value
+        k0=[0.5f0],                 # k0 value
+        #neurons=15                  # neurons (optional)
+        )
+    #@test Q10_m_test.Q10 == [2.0f0]
+    @test Q10_m_test.gamma0 == [0.5f0]
+    @test Q10_m_test.k0 == [0.5f0]
+
+    # test model instantiation
     sinus_m = SinusHybridModel([:x1], [:x1], 1; b=[0.0f0])
     @test sinus_m.b == [0.0f0]
 
+    #=
+    #test model instantiation
+    div_m = FluxDiversityModel_test([:x1, x2], [:x3, :x4]; gamma=[0.5f0],k0=[0.5f0])
+    @test div_m.gamma == [0.5f0]
+    @test div_m.k0 == [0.5f0]
+    =#
 end
+
+
